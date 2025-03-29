@@ -1,4 +1,4 @@
-#7
+#8
 name: istory-k8s-dev
 on:
   push:
@@ -103,22 +103,22 @@ jobs:
           ref: main # 바꾸기
           path: .
           token: ${{ secrets.GIT_PAT }}
-      - name: 11.Install kubectl
+      - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/
-      - name: 12.Configure AWS credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
   
-      - name: 13.Update kubeconfig for EKS
+      - name: Update kubeconfig for EKS
         run: |
           aws eks update-kubeconfig --region $AWS_REGION --name istory
-      - name: 14.apply secret
+      - name: apply secret
         run: |
           kubectl create secret generic istory-db-secret \
             --from-literal=MYSQL_USER=${{ secrets.MYSQL_USER }} \
@@ -127,21 +127,20 @@ jobs:
             --from-literal=MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
             --namespace=default \
             --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: 15.kustomize install
+      - name: kustomize install
         run: |
           curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
           sudo mv kustomize /usr/local/bin
-
-      - name: 16.kustomize update image yaml
+      - name: kustomize update image yaml
         run: |
           cd overlay/aws-dev
-          kustomize edit set image istory=dhgyrms23/istory:${{ github.run_number }}
-
-      - name: 17.push yaml
+          kustomize edit set image dhgyrms23/istory=dagntong76/istory:${{ github.run_number }}
+      - name: push yaml
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git commit -am "Update image tag to ${{  github.run_number }}"
           git push origin main
+
+
 
