@@ -103,22 +103,22 @@ jobs:
           ref: main # 바꾸기
           path: .
           token: ${{ secrets.GIT_PAT }}
-      - name: Install kubectl
+      - name: 11.Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/
-      - name: Configure AWS credentials
+      - name: 12.Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
   
-      - name: Update kubeconfig for EKS
+      - name: 13.Update kubeconfig for EKS
         run: |
           aws eks update-kubeconfig --region $AWS_REGION --name istory
-      - name: apply secret
+      - name: 14.apply secret
         run: |
           kubectl create secret generic istory-db-secret \
             --from-literal=MYSQL_USER=${{ secrets.MYSQL_USER }} \
@@ -128,15 +128,16 @@ jobs:
             --namespace=default \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: kustomize install
+      - name: 15.kustomize install
         run: |
-          <>
+          curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          sudo mv kustomize /usr/local/bin
 
-      - name: kustomize update image yaml
+      - name: 16.kustomize update image yaml
         run: |
-          kustomize edit set image istory=dagntong76/istory:${{ github.run_number }}
-          
-      - name: push yaml
+          kustomize edit set image istory=dhgyrms23/istory:${{ github.run_number }}
+
+      - name: 17.push yaml
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
